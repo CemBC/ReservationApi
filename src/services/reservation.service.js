@@ -1,0 +1,221 @@
+import prisma from "../config/prisma.js";
+
+export async function getAllReservations() {
+  return await prisma.reservation.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true
+        }
+      },
+      resource: true
+    },
+    orderBy: {
+      startDate: "asc"
+    }
+  });
+}
+
+export async function getReservationById(id) {
+  return await prisma.reservation.findUnique({
+    where: {
+      id
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          role: true
+        }
+      },
+      resource: true
+    }
+  });
+}
+
+export async function createReservation(data) {
+  const resource = await prisma.resource.findUnique({
+    where: {
+      id: data.resourceId
+    }
+  });
+
+  if (!resource) {
+    return { error: "RESOURCE_NOT_FOUND" };
+  }
+
+  if (!resource.isActive) {
+    return { error: "RESOURCE_INACTIVE" };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: data.userId
+    }
+  });
+
+  if (!user) {
+    return { error: "USER_NOT_FOUND" };
+  }
+
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+
+  if (startDate >= endDate) {
+    return { error: "INVALID_DATE_RANGE" };
+  }
+
+  if (startDate < new Date()) {
+    return { error: "RESERVATION_IN_PAST" };
+  }
+
+  const conflictingReservation = await prisma.reservation.findFirst({
+    where: {
+      resourceId: data.resourceId,
+      status: "ACTIVE",
+      startDate: {
+        lt: endDate
+      },
+      endDate: {
+        gt: startDate
+      }
+    }
+  });
+
+  if (conflictingReservation) {
+    return { error: "RESERVATION_CONFLICT" };
+  }
+
+  const reservation = await prisma.reservation.create({
+    data: {
+      userId: data.userId,
+      resourceId: data.resourceId,
+      startDate,
+      endDate
+    }
+  });
+
+  return { reservation };
+}
+
+export async function updateReservation(id, data) {
+  const existingReservation = await prisma.reservation.findUnique({
+    where: {
+      id
+    }
+  });
+
+  if (!existingReservation) {
+    return { error: "RESERVATION_NOT_FOUND" };
+  }
+
+  if (existingReservation.status === "CANCELLED") {
+    return { error: "RESERVATION_CANCELLED" };
+  }
+
+  if (existingReservation.status === "COMPLETED") {
+    return { error: "RESERVATION_COMPLETED" };
+  }
+
+  const resourceId =
+    data.resourceId ?? existingReservation.resourceId;
+
+  const startDate = data.startDate
+    ? new Date(data.startDate)
+    : existingReservation.startDate;
+
+  const endDate = data.endDate
+    ? new Date(data.endDate)
+    : existingReservation.endDate;
+
+  if (startDate >= endDate) {
+    return { error: "INVALID_DATE_RANGE" };
+  }
+
+  if (startDate < new Date()) {
+    return { error: "RESERVATION_IN_PAST" };
+  }
+
+  const resource = await prisma.resource.findUnique({
+    where: {
+      id: resourceId
+    }
+  });
+
+  if (!resource) {
+    return { error: "RESOURCE_NOT_FOUND" };
+  }
+
+  if (!resource.isActive) {
+    return { error: "RESOURCE_INACTIVE" };
+  }
+
+  const conflictingReservation = await prisma.reservation.findFirst({
+    where: {
+      id: {
+        not: id
+      },
+      resourceId,
+      status: "ACTIVE",
+      startDate: {
+        lt: endDate
+      },
+      endDate: {
+        gt: startDate
+      }
+    }
+  });
+
+  if (conflictingReservation) {
+    return { error: "RESERVATION_CONFLICT" };
+  }
+
+  const reservation = await prisma.reservation.update({
+    where: {
+      id
+    },
+    data: {
+      resourceId,
+      startDate,
+      endDate
+    }
+  });
+
+  return { reservation };
+}
+
+export async function cancelReservation(id) {
+  const reservation = await prisma.reservation.findUnique({
+    where: {
+      id
+    }
+  });
+
+  if (!reservation) {
+    return { error: "RESERVATION_NOT_FOUND" };
+  }
+
+  if (reservation.status === "CANCELLED") {
+    return { error: "ALREADY_CANCELLED" };
+  }
+
+  if (reservation.status === "COMPLETED") {
+    return { error: "RESERVATION_COMPLETED" };
+  }
+
+  const updatedReservation = await prisma.reservation.update({
+    where: {
+      id
+    },
+    data: {
+      status: "CANCELLED"
+    }
+  });
+
+  return { reservation: updatedReservation };
+}

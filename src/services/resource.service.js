@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+
 export async function deleteResource(id) {
     return await prisma.resource.delete({
         where: {
@@ -7,6 +8,7 @@ export async function deleteResource(id) {
     })
     
 }
+
 export async function getAllResources() {
   return await prisma.resource.findMany();
 }

@@ -35,9 +35,24 @@ async function main() {
         ],
         skipDuplicates: true
     });
+
+    const testUser = await prisma.user.upsert({
+      where: {
+        email: "test@example.com"
+      },
+      update: {},
+      create: {
+        fullName: "Test User",
+        email: "test@example.com",
+        passwordHash: "temporary-hash",
+        role: "USER"
+      }
+    });
+    console.log(`Test user id: ${testUser.id}`);
     console.log("Seed Completed");
 
 }
+
 
 main().catch((error) => {
     console.error("Seed Failed:", error);
