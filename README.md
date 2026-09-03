@@ -129,8 +129,6 @@ Interactive Swagger/OpenAPI documentation is available at:
 http://localhost:3000/api/docs
 ```
 
-Swagger supports JWT authentication, allowing protected endpoints to be tested directly from the browser.
-
 ---
 
 ## Tech Stack
@@ -459,24 +457,6 @@ The user ID is automatically obtained from the authenticated user's JWT.
 
 ---
 
-## HTTP Status Codes
-
-The API uses standard HTTP status codes including:
-
-| Status | Meaning |
-|---|---|
-| `200` | Successful request |
-| `201` | Resource created |
-| `204` | Successful deletion |
-| `400` | Validation or invalid request |
-| `401` | Authentication required or invalid token |
-| `403` | Authenticated but not authorized |
-| `404` | Resource not found |
-| `409` | Conflict with current resource state |
-| `500` | Internal server error |
-
----
-
 ## Security
 
 The API implements several security practices:
@@ -490,33 +470,6 @@ The API implements several security practices:
 - Reservation user IDs are derived from authenticated JWTs
 - Request payloads and parameters are validated using Zod
 - Internal server errors do not expose stack traces to clients
-
----
-
-## Development Status
-
-Completed:
-
-- PostgreSQL database integration
-- Prisma ORM and migrations
-- Resource CRUD
-- Reservation workflow
-- Reservation conflict detection
-- JWT authentication
-- Role-based authorization
-- Reservation ownership authorization
-- Zod request validation
-- Global error handling
-- Pagination and filtering
-- Swagger/OpenAPI documentation
-
-Planned:
-
-- Automated integration tests
-- Authentication and authorization tests
-- Reservation conflict tests
-- Production deployment
-- CI/CD with GitHub Actions
 
 ---
 
