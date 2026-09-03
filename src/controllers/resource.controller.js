@@ -1,52 +1,66 @@
-import { getAllResources  , getResourceById , createResource , updateResource , deleteResource} from "../services/resource.service.js";
+import {
+  getResourcesFiltered,
+  getResourceById,
+  createResource,
+  updateResource,
+  deleteResource
+} from "../services/resource.service.js";
+
+import { AppError } from "../utils/app-error.js";
+
+export async function getResources(req, res) {
+  const result = await getResourcesFiltered(
+    req.validated.query
+  );
+
+  res.status(200).json(result);
+}
+
+export async function getResource(req, res) {
+  const id = Number(req.params.id);
+
+  const resource = await getResourceById(id);
+
+  if (!resource) {
+    throw new AppError("Resource not found", 404);
+  }
+
+  res.status(200).json(resource);
+}
+
+export async function createNewResource(req, res) {
+  const resource = await createResource(req.body);
+
+  res.status(201).json(resource);
+}
+
+export async function updateExistingResource(req, res) {
+  const id = Number(req.params.id);
+
+  const existingResource = await getResourceById(id);
+
+  if (!existingResource) {
+    throw new AppError("Resource not found", 404);
+  }
+
+  const resource = await updateResource(
+    id,
+    req.body
+  );
+
+  res.status(200).json(resource);
+}
 
 export async function deleteExistingResource(req, res) {
-    const id = Number(req.params.id);
-    const existingResource = await getResourceById(id);
+  const id = Number(req.params.id);
 
-    if(!existingResource) {
-        return res.status(400).json({
-            message: "Resource not found"
-        });
-    }
-    await deleteResource(id);
-    
-    return res.status(204).send();
-}
-export async function updateExistingResource(req ,res) {
-    const id = Number(req.params.id);
-    const existingResource = await getResourceById(id);
+  const existingResource = await getResourceById(id);
 
-    if(!existingResource) {
-        return res.status(404).json({
-            message: "Resource not found"
-        })
-    }
+  if (!existingResource) {
+    throw new AppError("Resource not found", 404);
+  }
 
-    const resource = await updateResource(id , req.body);
-    return res.status(200).json(resource);
-}
+  await deleteResource(id);
 
-export async function createNewResource(req , res){
-    const resource = await createResource(req.body);
-
-    res.status(201).json(resource);
-}
-
-export async function getResources(req , res){
-    const resources = await getAllResources();
-
-    res.status(200).json(resources);
-}
-
-export async function getResource(req , res) {
-    const id = Number(req.params.id);
-    const resource = await getResourceById(id);
-    if(!resource) {
-        return res.status(404).json({
-            message: "Resource not found"
-        })
-    }
-
-    res.status(200).json(resource);
+  res.status(204).send();
 }
