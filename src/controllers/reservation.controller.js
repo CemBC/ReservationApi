@@ -1,5 +1,6 @@
 import {
   getAllReservations,
+  getReservationsByUserId,
   getReservationById,
   createReservation,
   updateReservation,
@@ -7,7 +8,15 @@ import {
 } from "../services/reservation.service.js";
 
 export async function getReservations(req, res) {
-  const reservations = await getAllReservations();
+  let reservations;
+
+  if (req.user.role === "ADMIN") {
+    reservations = await getAllReservations();
+  } else {
+    reservations = await getReservationsByUserId(
+      req.user.userId
+    );
+  }
 
   res.status(200).json(reservations);
 }
@@ -15,19 +24,30 @@ export async function getReservations(req, res) {
 export async function getReservation(req, res) {
   const id = Number(req.params.id);
 
-  const reservation = await getReservationById(id);
+  const result = await getReservationById(id, req.user);
 
-  if (!reservation) {
+  if (result.error === "RESERVATION_NOT_FOUND") {
     return res.status(404).json({
       message: "Reservation not found"
     });
   }
 
-  res.status(200).json(reservation);
+  if (result.error === "FORBIDDEN") {
+    return res.status(403).json({
+      message: "Forbidden"
+    });
+  }
+
+  res.status(200).json(result.reservation);
 }
 
 export async function createNewReservation(req, res) {
-  const result = await createReservation(req.body);
+  const data = {
+    ...req.body,
+    userId: req.user.userId
+  };
+
+  const result = await createReservation(data);
 
   if (result.error === "RESOURCE_NOT_FOUND") {
     return res.status(404).json({
@@ -71,11 +91,21 @@ export async function createNewReservation(req, res) {
 export async function updateExistingReservation(req, res) {
   const id = Number(req.params.id);
 
-  const result = await updateReservation(id, req.body);
+  const result = await updateReservation(
+    id,
+    req.body,
+    req.user
+  );
 
   if (result.error === "RESERVATION_NOT_FOUND") {
     return res.status(404).json({
       message: "Reservation not found"
+    });
+  }
+
+  if (result.error === "FORBIDDEN") {
+    return res.status(403).json({
+      message: "Forbidden"
     });
   }
 
@@ -127,11 +157,20 @@ export async function updateExistingReservation(req, res) {
 export async function cancelExistingReservation(req, res) {
   const id = Number(req.params.id);
 
-  const result = await cancelReservation(id);
+  const result = await cancelReservation(
+    id,
+    req.user
+  );
 
   if (result.error === "RESERVATION_NOT_FOUND") {
     return res.status(404).json({
       message: "Reservation not found"
+    });
+  }
+
+  if (result.error === "FORBIDDEN") {
+    return res.status(403).json({
+      message: "Forbidden"
     });
   }
 

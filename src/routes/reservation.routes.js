@@ -8,12 +8,14 @@ import {
   cancelExistingReservation
 } from "../controllers/reservation.controller.js";
 
+import { authenticate } from "../middleware/auth.middleware.js";
+
 const router = express.Router();
 
-router.get("/", getReservations);
-router.get("/:id", getReservation);
-router.post("/", createNewReservation);
-router.put("/:id", updateExistingReservation);
-router.patch("/:id/cancel", cancelExistingReservation);
+router.get("/", authenticate, getReservations);
+router.get("/:id", authenticate, getReservation);
+router.post("/", authenticate, createNewReservation);
+router.put("/:id", authenticate, updateExistingReservation);
+router.patch("/:id/cancel", authenticate, cancelExistingReservation);
 
 export default router;

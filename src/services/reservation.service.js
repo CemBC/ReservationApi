@@ -1,41 +1,58 @@
 import prisma from "../config/prisma.js";
 
+const reservationInclude = {
+  user: {
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true
+    }
+  },
+  resource: true
+};
+
 export async function getAllReservations() {
   return await prisma.reservation.findMany({
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true
-        }
-      },
-      resource: true
-    },
+    include: reservationInclude,
     orderBy: {
       startDate: "asc"
     }
   });
 }
 
-export async function getReservationById(id) {
-  return await prisma.reservation.findUnique({
+export async function getReservationsByUserId(userId) {
+  return await prisma.reservation.findMany({
+    where: {
+      userId
+    },
+    include: reservationInclude,
+    orderBy: {
+      startDate: "asc"
+    }
+  });
+}
+
+export async function getReservationById(id, requester) {
+  const reservation = await prisma.reservation.findUnique({
     where: {
       id
     },
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true
-        }
-      },
-      resource: true
-    }
+    include: reservationInclude
   });
+
+  if (!reservation) {
+    return { error: "RESERVATION_NOT_FOUND" };
+  }
+
+  if (
+    requester.role !== "ADMIN" &&
+    reservation.userId !== requester.userId
+  ) {
+    return { error: "FORBIDDEN" };
+  }
+
+  return { reservation };
 }
 
 export async function createReservation(data) {
@@ -103,7 +120,7 @@ export async function createReservation(data) {
   return { reservation };
 }
 
-export async function updateReservation(id, data) {
+export async function updateReservation(id, data, requester) {
   const existingReservation = await prisma.reservation.findUnique({
     where: {
       id
@@ -112,6 +129,13 @@ export async function updateReservation(id, data) {
 
   if (!existingReservation) {
     return { error: "RESERVATION_NOT_FOUND" };
+  }
+
+  if (
+    requester.role !== "ADMIN" &&
+    existingReservation.userId !== requester.userId
+  ) {
+    return { error: "FORBIDDEN" };
   }
 
   if (existingReservation.status === "CANCELLED") {
@@ -189,7 +213,7 @@ export async function updateReservation(id, data) {
   return { reservation };
 }
 
-export async function cancelReservation(id) {
+export async function cancelReservation(id, requester) {
   const reservation = await prisma.reservation.findUnique({
     where: {
       id
@@ -198,6 +222,13 @@ export async function cancelReservation(id) {
 
   if (!reservation) {
     return { error: "RESERVATION_NOT_FOUND" };
+  }
+
+  if (
+    requester.role !== "ADMIN" &&
+    reservation.userId !== requester.userId
+  ) {
+    return { error: "FORBIDDEN" };
   }
 
   if (reservation.status === "CANCELLED") {
