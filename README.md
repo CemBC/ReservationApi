@@ -1,10 +1,63 @@
+## Swagger Documentation
+
+Interactive API documentation is provided using Swagger UI and OpenAPI.
+
+### Live API Documentation
+
+The deployed API documentation is available at:
+
+https://reservation-api-cembc-hfebdgh3exefe2ez.italynorth-01.azurewebsites.net/api/docs
+
+### Local Documentation
+
+When running the application locally:
+
+```text
+http://localhost:3000/api/docs
+```
+---
+
 # Reservation API
 
-A RESTful reservation management API built with Node.js, Express, PostgreSQL, and Prisma.
+A production-ready RESTful API for managing users, resources, and reservations.
 
-The API allows users to register, authenticate, browse available resources, and manage their own reservations. Administrators can manage resources and access reservations across all users.
+Built with Node.js, Express, Prisma ORM, and PostgreSQL, the project provides authentication, role-based authorization, reservation conflict detection, validation, centralized error handling, API documentation, automated testing, and cloud deployment support.
 
-The project includes JWT-based authentication, role-based authorization, reservation conflict detection, request validation, pagination, filtering, centralized error handling, and Swagger/OpenAPI documentation.
+## Tech Stack
+
+### Backend
+- Node.js
+- Express.js
+- JavaScript (ES Modules)
+
+### Database
+- PostgreSQL
+- Prisma ORM
+- Neon PostgreSQL
+
+### Authentication & Security
+- JSON Web Token (JWT)
+- bcrypt
+- Role-Based Access Control (RBAC)
+
+### Validation & Error Handling
+- Zod
+- Centralized error handling middleware
+- Async error handling
+
+### Testing
+- Jest
+- Supertest
+- Dedicated PostgreSQL test database
+
+### Documentation
+- Swagger UI
+- OpenAPI
+
+### Deployment
+- Azure App Service
+- Neon PostgreSQL
+- GitHub Actions
 
 ---
 
@@ -17,59 +70,30 @@ The project includes JWT-based authentication, role-based authorization, reserva
 - Password hashing with bcrypt
 - JWT-based authentication
 - Protected API endpoints
-
-### Authorization
-
-Two roles are supported:
-
-- `USER`
-- `ADMIN`
-
-Users can:
-
-- Browse resources
-- Create reservations
-- View their own reservations
-- Update their own reservations
-- Cancel their own reservations
-
-Administrators can:
-
-- Perform all user operations
-- View reservations from all users
-- Create resources
-- Update resources
-- Delete resources
+- Role-based authorization
+- USER and ADMIN roles
 
 ### Resource Management
 
-Resources support:
-
-- Create
-- Read
-- Update
-- Delete
-- Pagination
-- Active/inactive filtering
-- Location filtering
-- Name and description search
-
-Resource modification endpoints are restricted to administrators.
+- Create resources
+- Retrieve all resources
+- Retrieve a resource by ID
+- Update resources
+- Delete resources
+- Resource activation status
+- Capacity and location information
+- Pagination and filtering
 
 ### Reservation Management
 
-Reservations support:
-
-- Create reservation
-- List reservations
-- Get reservation by ID
-- Update reservation
-- Cancel reservation
-- Pagination
-- Status filtering
-- Resource filtering
-
-Users can only access their own reservations, while administrators can access reservations belonging to any user.
+- Create reservations
+- Retrieve reservations
+- Retrieve reservations by ID
+- Update reservations
+- Cancel reservations
+- Reservation ownership validation
+- Administrator access to all reservations
+- Reservation status management
 
 ### Reservation Conflict Detection
 
@@ -92,111 +116,88 @@ Reservation A: 10:00 - 12:00
 Reservation B: 12:00 - 14:00
 ```
 
-is valid.
+These reservations do not conflict.
 
-### Validation
+Only active reservations participate in conflict detection.
 
-Request validation is implemented using Zod.
+### Authorization
 
-Validation covers:
-
-- Authentication requests
-- Resource creation and updates
-- Reservation creation and updates
-- Route parameters
-- Pagination parameters
-- Filter parameters
-- ISO 8601 date formats
-
-Invalid requests return structured validation errors.
-
-### Error Handling
-
-The API uses centralized error handling with:
-
-- Custom `AppError`
-- Async route handler wrapper
-- Global error middleware
-- 404 route handler
-
-Unexpected server errors are logged internally without exposing stack traces to clients.
-
-### API Documentation
-
-Interactive Swagger/OpenAPI documentation is available at:
+The API supports two roles:
 
 ```text
-http://localhost:3000/api/docs
+USER
+ADMIN
 ```
+
+Users can manage their own reservations, while administrators can access and manage reservations across the system.
 
 ---
 
-## Tech Stack
+## Project Architecture
 
-- Node.js
-- Express.js
-- PostgreSQL
-- Prisma ORM
-- Zod
-- JSON Web Token
-- bcrypt
-- Swagger / OpenAPI
-- Nodemon
-
----
-
-## Project Structure
+The application follows a layered architecture:
 
 ```text
-ReservationApi/
-├── prisma/
-│   ├── migrations/
-│   ├── schema.prisma
-│   └── seed.js
+src/
+├── config/
+│   ├── prisma.js
+│   └── swagger.js
 │
-├── src/
-│   ├── config/
-│   │   ├── prisma.js
-│   │   └── swagger.js
-│   │
-│   ├── controllers/
-│   │   ├── auth.controller.js
-│   │   ├── reservation.controller.js
-│   │   └── resource.controller.js
-│   │
-│   ├── middleware/
-│   │   ├── auth.middleware.js
-│   │   ├── error.middleware.js
-│   │   ├── role.middleware.js
-│   │   └── validate.middleware.js
-│   │
-│   ├── routes/
-│   │   ├── auth.routes.js
-│   │   ├── reservation.routes.js
-│   │   └── resource.routes.js
-│   │
-│   ├── services/
-│   │   ├── auth.service.js
-│   │   ├── reservation.service.js
-│   │   └── resource.service.js
-│   │
-│   ├── utils/
-│   │   ├── app-error.js
-│   │   └── async-handler.js
-│   │
-│   ├── validators/
-│   │   ├── auth.validator.js
-│   │   ├── reservation.validator.js
-│   │   └── resource.validator.js
-│   │
-│   ├── app.js
-│   └── server.js
+├── controllers/
+│   ├── auth.controller.js
+│   ├── resource.controller.js
+│   └── reservation.controller.js
 │
-├── .env.example
-├── .gitignore
-├── package.json
-└── README.md
+├── services/
+│   ├── auth.service.js
+│   ├── resource.service.js
+│   └── reservation.service.js
+│
+├── routes/
+│   ├── auth.routes.js
+│   ├── resource.routes.js
+│   └── reservation.routes.js
+│
+├── middleware/
+│   ├── auth.middleware.js
+│   ├── role.middleware.js
+│   ├── validate.middleware.js
+│   └── error.middleware.js
+│
+├── validators/
+│   ├── auth.validator.js
+│   ├── resource.validator.js
+│   └── reservation.validator.js
+│
+├── utils/
+│   ├── app-error.js
+│   └── async-handler.js
+│
+├── app.js
+└── server.js
 ```
+
+### Request Flow
+
+```text
+HTTP Request
+     ↓
+Route
+     ↓
+Validation Middleware
+     ↓
+Authentication / Authorization Middleware
+     ↓
+Controller
+     ↓
+Service
+     ↓
+Prisma ORM
+     ↓
+PostgreSQL
+```
+
+This separation keeps HTTP handling, business logic, validation, authentication, and database access independent from each other.
 
 ---
 
@@ -205,48 +206,46 @@ ReservationApi/
 ### User
 
 ```text
-id
-fullName
-email
-passwordHash
-role
-createdAt
-```
-
-Each email address must be unique.
-
-Roles:
-
-```text
-USER
-ADMIN
+User
+├── id
+├── fullName
+├── email
+├── passwordHash
+├── role
+├── createdAt
+└── reservations
 ```
 
 ### Resource
 
 ```text
-id
-name
-description
-capacity
-location
-isActive
-createdAt
+Resource
+├── id
+├── name
+├── description
+├── capacity
+├── location
+├── isActive
+├── createdAt
+└── reservations
 ```
 
 ### Reservation
 
 ```text
-id
-userId
-resourceId
-startDate
-endDate
-status
-createdAt
+Reservation
+├── id
+├── userId
+├── resourceId
+├── startDate
+├── endDate
+├── status
+├── createdAt
+├── user
+└── resource
 ```
 
-Reservation statuses:
+### Reservation Status
 
 ```text
 ACTIVE
@@ -260,119 +259,154 @@ COMPLETED
 
 ### Authentication
 
-| Method | Endpoint | Description | Access |
+| Method | Endpoint | Description | Authentication |
 |---|---|---|---|
-| POST | `/api/auth/register` | Register a user | Public |
-| POST | `/api/auth/login` | Login and receive JWT | Public |
+| POST | `/api/auth/register` | Register a new user | No |
+| POST | `/api/auth/login` | Authenticate a user | No |
 
 ### Resources
 
-| Method | Endpoint | Description | Access |
-|---|---|---|---|
-| GET | `/api/resources` | List resources | Authenticated |
-| GET | `/api/resources/:id` | Get resource by ID | Authenticated |
-| POST | `/api/resources` | Create resource | Admin |
-| PUT | `/api/resources/:id` | Update resource | Admin |
-| DELETE | `/api/resources/:id` | Delete resource | Admin |
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/resources` | Get resources |
+| GET | `/api/resources/:id` | Get resource by ID |
+| POST | `/api/resources` | Create resource |
+| PUT | `/api/resources/:id` | Update resource |
+| DELETE | `/api/resources/:id` | Delete resource |
+
+Resource endpoints support validation, authorization, pagination, and filtering where applicable.
 
 ### Reservations
 
-| Method | Endpoint | Description | Access |
-|---|---|---|---|
-| GET | `/api/reservations` | List accessible reservations | Authenticated |
-| GET | `/api/reservations/:id` | Get reservation by ID | Owner / Admin |
-| POST | `/api/reservations` | Create reservation | Authenticated |
-| PUT | `/api/reservations/:id` | Update reservation | Owner / Admin |
-| PATCH | `/api/reservations/:id/cancel` | Cancel reservation | Owner / Admin |
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/reservations` | Get accessible reservations |
+| GET | `/api/reservations/:id` | Get reservation by ID |
+| POST | `/api/reservations` | Create reservation |
+| PUT | `/api/reservations/:id` | Update reservation |
+| DELETE | `/api/reservations/:id` | Cancel/delete reservation |
 
----
+Reservation operations require authentication.
 
-## Pagination and Filtering
-
-### Resources
-
-Example:
-
-```http
-GET /api/resources?page=1&limit=10&isActive=true&search=room
-```
-
-Supported query parameters:
-
-```text
-page
-limit
-isActive
-location
-search
-```
-
-The `search` parameter searches resource names and descriptions.
-
-### Reservations
-
-Example:
-
-```http
-GET /api/reservations?page=1&limit=10&status=ACTIVE&resourceId=1
-```
-
-Supported query parameters:
-
-```text
-page
-limit
-status
-resourceId
-```
-
-Paginated endpoints return:
-
-```json
-{
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 0,
-    "totalPages": 0
-  }
-}
-```
+The authenticated user's identity is obtained from the JWT rather than trusting a client-provided user ID.
 
 ---
 
 ## Authentication
 
-Protected endpoints require a JWT access token.
-
-Send the token using the `Authorization` header:
+Protected endpoints expect a JWT using the Bearer authentication scheme:
 
 ```http
 Authorization: Bearer <token>
 ```
 
-Example login request:
+After successful login, the API generates a token containing the authenticated user's ID and role.
+
+Example payload:
 
 ```json
 {
-  "email": "user@example.com",
-  "password": "123456"
+  "userId": 1,
+  "role": "USER"
 }
 ```
 
-A successful login returns a JWT and user information.
-
-The authenticated user's identity is extracted from the JWT. Reservation creation does not accept a trusted `userId` from the request body.
+The token is verified by authentication middleware before protected requests reach the controller.
 
 ---
 
-## Getting Started
+## Validation
+
+Incoming request data is validated using Zod.
+
+Validation is separated from controllers through dedicated validator modules.
+
+Examples of validated data include:
+
+- Email format
+- Password requirements
+- Resource information
+- Reservation IDs
+- Start and end dates
+- Query parameters
+- Pagination parameters
+
+Invalid requests are rejected before reaching the business logic layer.
+
+---
+
+## Error Handling
+
+The application uses centralized error handling.
+
+Expected application errors are represented using a custom `AppError` class and forwarded to the global error middleware.
+
+This provides consistent error responses across the API.
+
+Example:
+
+```json
+{
+  "message": "Resource not found"
+}
+```
+
+Async route handlers are wrapped using a reusable async handler utility to avoid repetitive `try/catch` blocks.
+
+---
+
+## Pagination and Filtering
+
+List endpoints support query parameters for retrieving smaller and more relevant datasets.
+
+Example:
+
+```http
+GET /api/resources?page=1&limit=10
+```
+
+Filtering parameters can also be supplied where supported by the endpoint.
+
+This prevents clients from having to retrieve the entire dataset for every request.
+
+---
+
+## Swagger Documentation
+
+Interactive API documentation is provided using Swagger UI and OpenAPI.
+
+When running locally:
+
+```text
+http://localhost:3000/api/docs
+```
+
+Swagger can be used to inspect endpoints, request schemas, responses, and authentication requirements.
+
+---
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+JWT_SECRET="your-secret-key"
+NODE_ENV="development"
+```
+
+Do not commit `.env` files to source control.
+
+An `.env.example` file can be used to document the required environment variables without exposing credentials.
+
+---
+
+## Local Development
 
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/CemBC/ReservationApi.git
 cd ReservationApi
 ```
 
@@ -384,95 +418,221 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a `.env` file based on `.env.example`.
-
-```env
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/reservation_db"
-JWT_SECRET="your_super_secret_jwt_key"
-```
-
-Do not commit the `.env` file.
-
-### 4. Create the database
-
-Create a PostgreSQL database named:
+Create:
 
 ```text
-reservation_db
+.env
 ```
 
-### 5. Run Prisma migrations
+and configure the PostgreSQL connection string and JWT secret.
 
-```bash
-npx prisma migrate dev
-```
-
-### 6. Generate Prisma Client
+### 4. Generate Prisma Client
 
 ```bash
 npx prisma generate
 ```
 
-### 7. Seed the database
+### 5. Apply database migrations
+
+```bash
+npx prisma migrate deploy
+```
+
+For development environments, migrations can also be created with:
+
+```bash
+npx prisma migrate dev
+```
+
+### 6. Seed the database
 
 ```bash
 npm run seed
 ```
 
-### 8. Start the development server
+### 7. Start the development server
 
 ```bash
 npm run dev
 ```
 
-The API will run at:
+The API will run by default at:
 
 ```text
 http://localhost:3000
 ```
 
-Swagger documentation:
+---
+
+## Production
+
+Start the application with:
+
+```bash
+npm start
+```
+
+The server uses the platform-provided port when deployed:
+
+```javascript
+const PORT = process.env.PORT || 3000;
+```
+
+This allows the same application to run locally and in cloud environments.
+
+---
+
+## Testing
+
+The project contains integration tests using Jest and Supertest.
+
+A dedicated PostgreSQL test database is used to keep test data isolated from development and production data.
+
+Create:
 
 ```text
-http://localhost:3000/api/docs
+.env.test
 ```
+
+Example:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/reservation_test"
+JWT_SECRET="test-secret"
+NODE_ENV="test"
+```
+
+Run the tests with:
+
+```bash
+npm test
+```
+
+Test coverage includes:
+
+- Registration
+- Login
+- Authentication
+- Authorization
+- Resource operations
+- Reservation operations
+- Reservation ownership
+- ADMIN permissions
+- Reservation conflict detection
+- Validation
+- Error responses
 
 ---
 
-## Example Reservation Request
+## Deployment Architecture
 
-```http
-POST /api/reservations
+The production architecture is designed as:
+
+```text
+                    Internet
+                       │
+                       ▼
+              Azure App Service
+                       │
+                 Node.js / Express
+                       │
+                       ▼
+                   Prisma ORM
+                       │
+                       ▼
+               Neon PostgreSQL
 ```
 
-```json
-{
-  "resourceId": 1,
-  "startDate": "2026-10-05T10:00:00.000Z",
-  "endDate": "2026-10-05T12:00:00.000Z"
-}
+### Application Hosting
+
+The Node.js API is configured for deployment to Azure App Service.
+
+Production environment variables are configured through Azure App Service configuration rather than committed to the repository.
+
+### Production Database
+
+PostgreSQL is hosted using Neon.
+
+The production database connection is provided through the `DATABASE_URL` environment variable.
+
+### Continuous Deployment
+
+GitHub Actions is configured to build and deploy the application.
+
+The deployment pipeline performs:
+
+```text
+Push to main
+     ↓
+GitHub Actions
+     ↓
+Install dependencies
+     ↓
+Generate Prisma Client
+     ↓
+Build
+     ↓
+Create deployment artifact
+     ↓
+Authenticate with Azure
+     ↓
+Deploy to Azure App Service
 ```
 
-The user ID is automatically obtained from the authenticated user's JWT.
+Sensitive Azure deployment credentials are stored using GitHub repository secrets and Azure-managed authentication rather than source code.
 
 ---
 
-## Security
+## Security Considerations
 
-The API implements several security practices:
+The project implements several security practices:
 
 - Passwords are hashed using bcrypt
 - Authentication uses signed JWTs
-- JWT secrets are stored in environment variables
-- Users cannot assign themselves the `ADMIN` role during registration
-- Resource modification is restricted to administrators
-- Reservation ownership is enforced server-side
-- Reservation user IDs are derived from authenticated JWTs
-- Request payloads and parameters are validated using Zod
-- Internal server errors do not expose stack traces to clients
+- Protected routes require authentication
+- Role-based authorization is enforced server-side
+- Reservation ownership is validated server-side
+- Client-provided user IDs are not trusted for reservation ownership
+- Request bodies and query parameters are validated
+- Secrets are stored in environment variables
+- `.env` files are excluded from source control
+- Database queries are performed through Prisma ORM
 
 ---
 
-## License
+## Development Highlights
 
-This project is intended for educational and portfolio purposes.
+This project demonstrates practical backend development concepts including:
+
+- REST API design
+- Layered backend architecture
+- PostgreSQL relational database design
+- Prisma ORM
+- Database migrations
+- Authentication and authorization
+- Password hashing
+- JWT authentication
+- Role-based access control
+- Business-rule implementation
+- Reservation conflict detection
+- Request validation
+- Centralized error handling
+- Pagination and filtering
+- Async JavaScript
+- Integration testing
+- Swagger/OpenAPI documentation
+- Environment-based configuration
+- Cloud-hosted PostgreSQL
+- Azure App Service deployment configuration
+- CI/CD with GitHub Actions
+
+
+---
+
+## Author
+
+**Cem Başar Ceylani**
+
+Computer Engineer
+
+GitHub: CemBC
