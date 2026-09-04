@@ -13,7 +13,9 @@ const options = {
 
     servers: [
       {
-        url: "http://localhost:3000"
+        url: process.env.NODE_ENV === "production"
+      ? "https://reservation-api-cembc-hfebdgh3exefe2ez.italynorth-01.azurewebsites.net"
+      : "http://localhost:3000"
       }
     ],
 
