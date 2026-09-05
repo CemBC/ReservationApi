@@ -30,6 +30,9 @@ app.use(
   "/api/reservations",
   reservationRoutes
 );
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
 
 app.use(notFoundHandler);
 app.use(errorHandler);
