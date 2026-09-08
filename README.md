@@ -628,11 +628,3 @@ This project demonstrates practical backend development concepts including:
 
 
 ---
-
-## Author
-
-**Cem Başar Ceylani**
-
-Computer Engineer
-
-GitHub: CemBC
